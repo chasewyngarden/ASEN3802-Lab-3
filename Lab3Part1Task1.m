@@ -40,33 +40,60 @@ function [x_b, y_b] = NACA_Airfoil_gen (c, t, m, p, x)
     x_U = x - y_t.*sin(xi);  % i changes sign directions to go clockwise
     x_L = x + y_t.*sin(xi);
 
-    x_b = [ x_U(end:-1:1), x_L(2:end) ]; % boundary matrix which reverses direction so starts at TE and goes cw
+    x_b = [ x_U(end:-1:1), x_L(2:end) ]; % boundary matrix which reverses direction so starts at TE and goes cw (both Upper and lower)
     
     y_U = y_c - y_t.*cos(xi);
     y_L = y_c + y_t.*cos(xi);
 
     y_b = [ y_U(end:-1:1), y_L(2:end) ];
 
+    camber_line = 0;
+
+    if m == 0 && p == 0
+        camber_line = mean(y_b);
+    end
+    
+    figure;
+    hold on
+    plot (x_b, y_b, 'k', 'LineWidth', 1.5);
+    plot (x_b, camber_line, 'r', 'LineWidth', 1.5)
+    % plot (x_b(1), y_b(1), 'ro'); % Test plots to ensure proper direction, 
+    % plot (x_b(100), y_b(100), 'ro'); % Clockwise starting from TE
+    axis equal
+    xlabel('Chord');
+    ylabel('Camber');
+    title(['Plot of NACA ', num2str(m*100), num2str(p*10), num2str(t*100), ' Airfoil']);
+
+
 end
 
 
 c = 1;
+x = linspace(0,c, 1000); % x is between 0 and c
+
+% Givens for NACA 4415 Airfoil
 t = 0.15;
 m = 0.04;
 p = 0.4;
 
-x = linspace(0,c, 1000); % x is between 0 and c
 
 
-[x_b, y_b] = NACA_Airfoil_gen (c, t, m, p, x);
+
+[x_b_4415, y_b_4415] = NACA_Airfoil_gen (c, t, m, p, x); % NACA 4415 Airfoil
+
+[x_b_0018, y_b_0018] = NACA_Airfoil_gen (c, 0.18, 0, 0, x); % NACA 0018 Airfoil
+
+[x_b_2418, y_b_2418] = NACA_Airfoil_gen (c, 0.18, 0.02, 0.4, x); % NACA 2418 Airfoil
 
 
-figure;
-hold on
-plot (x_b, y_b, 'k');
-% plot (x_L, y_L, 'k');
-plot (x_b(1), y_b(1), 'ro');
-plot (x_b(100), y_b(100), 'ro');
-axis equal
+
+
+% figure;
+% hold on
+% plot (x_b, y_b, 'k');
+% % plot (x_L, y_L, 'k');
+% plot (x_b(1), y_b(1), 'ro');
+% plot (x_b(100), y_b(100), 'ro');
+% axis equal
 
 
