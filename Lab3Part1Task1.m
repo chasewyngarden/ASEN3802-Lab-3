@@ -47,22 +47,20 @@ function [x_b, y_b] = NACA_Airfoil_gen (c, t, m, p, x)
 
     y_b = [ y_U(end:-1:1), y_L(2:end) ];
 
-    camber_line = 0;
-
-    if m == 0 && p == 0
-        camber_line = mean(y_b);
-    end
     
     figure;
     hold on
     plot (x_b, y_b, 'k', 'LineWidth', 1.5);
-    plot (x_b, camber_line, 'r', 'LineWidth', 1.5)
+    if m ~= 0 && p ~= 0
+        plot (x, y_c, 'r', 'LineWidth', 1.5) % plots camber line
+    end
     % plot (x_b(1), y_b(1), 'ro'); % Test plots to ensure proper direction, 
     % plot (x_b(100), y_b(100), 'ro'); % Clockwise starting from TE
     axis equal
-    xlabel('Chord');
-    ylabel('Camber');
+    xlabel('x / c');
+    ylabel('y / c');
     title(['Plot of NACA ', num2str(m*100), num2str(p*10), num2str(t*100), ' Airfoil']);
+    hold off;
 
 
 end
@@ -77,9 +75,7 @@ m = 0.04;
 p = 0.4;
 
 
-
-
-[x_b_4415, y_b_4415] = NACA_Airfoil_gen (c, t, m, p, x); % NACA 4415 Airfoil
+% [x_b_4415, y_b_4415] = NACA_Airfoil_gen (c, t, m, p, x); % NACA 4415 Airfoil (test)
 
 [x_b_0018, y_b_0018] = NACA_Airfoil_gen (c, 0.18, 0, 0, x); % NACA 0018 Airfoil
 
@@ -87,13 +83,5 @@ p = 0.4;
 
 
 
-
-% figure;
-% hold on
-% plot (x_b, y_b, 'k');
-% % plot (x_L, y_L, 'k');
-% plot (x_b(1), y_b(1), 'ro');
-% plot (x_b(100), y_b(100), 'ro');
-% axis equal
 
 
