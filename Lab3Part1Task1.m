@@ -14,23 +14,75 @@ close all;
 
 
 c = 1;
-x = linspace(0,c, 1000); % x is between 0 and c
-
-% Givens for NACA 4415 Airfoil
-t = 0.15;
-m = 0.04;
-p = 0.4;
+x = linspace(0,c, 400); % x is between 0 and c
 
 
-[x_b_0006, y_b_0006] = NACA_Airfoil_gen (c, 0.06, 0, 0, x); % NACA 0006 Airfoil
+% Part 1 Task 1
 
-[x_b_0012, y_b_0012] = NACA_Airfoil_gen (c, 0.12, 0, 0, x); % NACA 0006 Airfoil
+% [x_b_0018, y_b_0018] = NACA_Airfoil_gen (c, 0.18, 0, 0, x); % NACA 0018 Airfoil
+% 
+% [x_b_2418, y_b_2418] = NACA_Airfoil_gen (c, 0.18, 0.02, 0.4, x); % NACA 2418 Airfoil
 
-[x_b_0018, y_b_0018] = NACA_Airfoil_gen (c, 0.18, 0, 0, x); % NACA 0018 Airfoil
+%  CL = Vortex_Panel(x_b_0012, y_b_0012, 5);
 
-[x_b_2418, y_b_2418] = NACA_Airfoil_gen (c, 0.18, 0.02, 0.4, x); % NACA 2418 Airfoil
 
-CL = Vortex_Panel(x_b_0012, y_b_0012, 5);
+
+% Part 1 Task 3
+
+alpha = linspace(-10, 20, 60); % alpha range for cl vs alpha
+
+[x_b_0012, y_b_0012] = NACA_Airfoil_gen (c, 0.12, 0, 0, x); % NACA 0012 Airfoil
+[x_b_2412, y_b_2412] = NACA_Airfoil_gen (c, 0.12, 0.02, 0.4, x); % NACA 2412 Airfoil
+[x_b_4412, y_b_4412] = NACA_Airfoil_gen (c, 0.12, 0.04, 0.4, x); % NACA 4412 Airfoil
+
+cl_0012 = zeros(size(alpha));
+cl_2412 = zeros(size(alpha));
+cl_4412 = zeros(size(alpha));
+
+for i = 1:length(alpha)
+    
+    cl_0012(i) = Vortex_Panel(x_b_0012, y_b_0012, alpha(i));
+    cl_2412(i) = Vortex_Panel(x_b_2412, y_b_2412, alpha(i));
+    cl_4412(i) = Vortex_Panel(x_b_4412, y_b_4412, alpha(i));
+
+end
+
+% calculating a_0 and cl_L=0 (using vortex panel)
+idx_lin = (alpha >= -4) & (alpha <= 8);  % logical indices for linear region
+
+% NACA 0012
+p0012 = polyfit(alpha(idx_lin), cl_0012(idx_lin), 1);  % cl ≈ p1*alpha + p2
+a0_0012 = p0012(1);              % lift-curve slope (per degree)
+alphaL0_0012 = -p0012(2) / p0012(1);  % zero-lift AoA (deg) and cl is 0  cl = a_0*alpha + cl(alpha=0)
+
+% NACA 2412
+p2412 = polyfit(alpha(idx_lin), cl_2412(idx_lin), 1); 
+a0_2412 = p2412(1);            
+alphaL0_2412 = -p2412(2) / p2412(1);  
+
+% NACA 4412
+p4412 = polyfit(alpha(idx_lin), cl_4412(idx_lin), 1); 
+a0_4412 = p4412(1);            
+alphaL0_4412 = -p4412(2) / p4412(1); 
+
+
+
+
+
+% figure;
+% hold on
+% plot (alpha, cl_0012, 'b', 'LineWidth', 1.5);
+% plot (alpha, cl_2412, 'm', 'LineWidth', 1.5);
+% plot (alpha, cl_4412, 'r', 'LineWidth', 1.5);
+% xlabel('AoA (\alpha)');
+% ylabel('Sectional Lift Coefficient ( c_l )');
+% title('c_l vs \alpha');
+% legend('NACA 0012', 'NACA 2412', 'NACA 4412', Location='best');
+% hold off;
+
+
+
+
 
 
 
@@ -41,22 +93,37 @@ function [x_b, y_b] = NACA_Airfoil_gen (c, t, m, p, x) % function to plot NACA 4
     y_t = ((t*c)/0.2) * (0.2969*sqrt(x/c) - 0.126*(x/c) - 0.3516*(x/c).^2 + 0.2843*(x/c).^3 - 0.1036*(x/c).^4); % thickness distribution of airfoil normal to the mean camber line
     
     y_c = 0; % formula for the mean camber line
-    
+
+    dy_c_dx = 0;
+
     for i = 1:length(x)   % looping through x vector
         if i >= 0 && i < p*c
-        
+
             y_c = ((m*x)/(p^2)) .* (2*p - (x/c));
-        
+
         end
-        
+
         if i >= p*c && i <= c
-        
+
             y_c = ((m*(c-x)) / ((1-p)^2)) .* (1 + (x/c) - 2*p);
-        
+
         end
     end
     
     dy_c_dx = diff(y_c) / diff(x);
+
+    % for i = 1:length(x)   % derivatives of y_c (by hand)
+    %     if i >= 0 && i < p*c
+    % 
+    %         dy_c_dx = 2*(m/p) - x.*((2*m) / (c*(p^2)));
+    %     end
+    % 
+    %     if i >= p*c && i <= c
+    % 
+    %         dy_c_dx = (2*m/(1-p)^2) .* (p - x./c);
+    % 
+    %     end
+    % end
     
     xi = atan(dy_c_dx);  % local angle
     
@@ -72,19 +139,19 @@ function [x_b, y_b] = NACA_Airfoil_gen (c, t, m, p, x) % function to plot NACA 4
     y_b = [ y_U(end:-1:1), y_L(2:end) ];
 
     
-    figure;
-    hold on
-    plot (x_b, y_b, 'k', 'LineWidth', 1.5);
-    if m ~= 0 && p ~= 0
-        plot (x, y_c, 'r', 'LineWidth', 1.5) % plots camber line
-    end
-    % plot (x_b(1), y_b(1), 'ro'); % Test plots to ensure proper direction, 
-    % plot (x_b(100), y_b(100), 'ro'); % Clockwise starting from TE
-    axis equal
-    xlabel('x / c');
-    ylabel('y / c');
-    title(['Plot of NACA ', num2str(m*100), num2str(p*10), num2str(t*100), ' Airfoil']);
-    hold off;
+    % figure;
+    % hold on
+    % plot (x_b, y_b, 'k', 'LineWidth', 1.5);
+    % if m ~= 0 && p ~= 0
+    %     plot (x, y_c, 'r', 'LineWidth', 1.5) % plots camber line
+    % end
+    % % plot (x_b(1), y_b(1), 'ro'); % Test plots to ensure proper direction, 
+    % % plot (x_b(100), y_b(100), 'ro'); % Clockwise starting from TE
+    % axis equal
+    % xlabel('x / c');
+    % ylabel('y / c');
+    % title(['Plot of NACA ', num2str(m*100), num2str(p*10), num2str(t*100), ' Airfoil']);
+    % hold off;
 
 
 end
