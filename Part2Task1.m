@@ -2,7 +2,7 @@ clear;
 clc;
 close all;
 
-N = 10;
+N = 1:10;
 b = 
 a0_t = 
 a0_r = 
