@@ -66,6 +66,13 @@ a0_4412 = p4412(1);
 alphaL0_4412 = -p4412(2) / p4412(1); 
 
 
+% Thin airfoil theory values
+[a0_0012_thin, alphaL0_0012_thin] = thin_NACA(0.00, 0.0);  % NACA 0012
+[a0_2412_thin, alphaL0_2412_thin] = thin_NACA(0.02, 0.4);  % NACA 2412
+[a0_4412_thin, alphaL0_4412_thin] = thin_NACA(0.04, 0.4);  % NACA 4412
+
+
+
 
 
 
@@ -307,6 +314,31 @@ CIRCULATION = sum(S.*V);
 CL = 2*CIRCULATION/CHORD;
 
 end
+
+
+
+function [a0_deg, alphaL0_deg] = thin_NACA(m, p)
+    % Thin airfoil theory: a0 and alpha_L=0 for NACA 4-digit (m,p)
+    theta = linspace(0, pi, 2000); % integration variable
+    X = 0.5*(1 - cos(theta)); % x/c = (1 - cosθ)/2
+
+    dyc_dx = zeros(size(theta));
+    idx1   = X < p; % front part (0 <= x < pc)
+
+    dyc_dx(idx1)  = 2*m/p^2 .* (p - X(idx1));
+    dyc_dx(~idx1) = 2*m/(1-p)^2 .* (p - X(~idx1));
+
+    % Zero-lift angle (radians) from thin airfoil theory
+    alphaL0_rad = (1/pi) * trapz(theta, dyc_dx .* (1 - cos(theta)));
+
+    % Lift-curve slope (radians): always 2π for thin airfoil theory
+    a0_rad = 2*pi;
+
+    % Convert to "per degree" and degrees
+    a0_deg = a0_rad * (pi/180); % dcl / d(alpha_deg)
+    alphaL0_deg = alphaL0_rad * 180/pi;
+end
+
 
 
 
