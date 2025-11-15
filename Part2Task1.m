@@ -31,6 +31,8 @@ for i = 1:length(N)
 
         di = AOA - AL0
 
+         An
+
     end 
 
 end 
